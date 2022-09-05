@@ -356,6 +356,7 @@ bool LTC298X::setupCustomRTD(uint8_t ch, uint8_t sr_ch, uint8_t wires, uint8_t m
 	    //ROM for custom data is only 384 byte wide, so we can store a max of 64 2x3 byte pairs
 	    start_addr_offset + num_values > 63
 	) return false; //invalid
+	uint16_t start_addr_offset_bytes = start_addr_offset * 6;
 	double old_ohm = 0;
 	double old_kelvin = 0;
 	for (uint8_t i = 0; i < num_values; i++) {
@@ -364,9 +365,9 @@ bool LTC298X::setupCustomRTD(uint8_t ch, uint8_t sr_ch, uint8_t wires, uint8_t m
 		if (kelvin[i] <= old_kelvin) return false; //must be greater
 		if (kelvin[i] >= 8192) return false; //must be less
 		//Resistance is absolute, so unsigned, saved as 13,11 unsigned fixed point fraction
-		write24(LTC298X_ADDR_RAM_START + start_addr_offset + i * 6, (uint32_t)(ohm[i] * 2048));
+		write24(LTC298X_ADDR_RAM_START + start_addr_offset_bytes + i * 6, (uint32_t)(ohm[i] * 2048));
 		//Kelvin is absolute, so unsinged, saved as 14,10 fixed point fraction
-		write24(LTC298X_ADDR_RAM_START + start_addr_offset + i * 6 + 3, (uint32_t)(kelvin[i] * 1024));
+		write24(LTC298X_ADDR_RAM_START + start_addr_offset_bytes + i * 6 + 3, (uint32_t)(kelvin[i] * 1024));
 		old_ohm = ohm[i];
 		old_kelvin = kelvin[i];
 	}
